@@ -1,1 +1,2 @@
 # mine
+用js实现的elasticsearch查询,把我自己定义的一种类似sql的语句翻译成elasticsearch的请求体
