@@ -188,12 +188,16 @@ function getAllAggs(selectOption,sourceOption){
 }
 
 //组装一个agg供排序用
-function getSortAggs(orderContent,innerAgg){
-  return  innerAgg[orderContent.toString()];
+function getSortAggs(orderContent,innerAgg,sortFlag){
+  if(sortFlag>0){
+    return  innerAgg['outerSort'];
+  }else{
+    return  innerAgg[orderContent.toString()];
+  }
 }
 
 //group by基本组装
-function getGroupBy(groupbyOption,innerAgg){
+function getGroupBy(groupbyOption,innerAgg,sortFlag){
   var agg= {};
   if( '0' == groupbyOption ){
     agg = innerAgg;
@@ -202,7 +206,7 @@ function getGroupBy(groupbyOption,innerAgg){
     var by = 'orderAgg';
     var order = orders.split(':')[1];
     var orderContent = orders.split(':')[0];
-    var orderAggs = getSortAggs(orderContent,innerAgg);
+    var orderAggs = getSortAggs(orderContent,innerAgg,sortFlag);
     innerAgg['orderAgg'] = orderAggs;
     var orderOption = {};
     orderOption[by.toString()] = order;
@@ -233,45 +237,36 @@ function getOnceOuterAggs(groupbyOption,innerAgg){
 
 //两次group
 function getDoubleOuterAggs(groupbyOption,innerAgg,selectOption,flag){
-  var agg2 = {};
-  var agg1 = {};
   var groups = groupbyOption.split(';');
-  var group1 = groups[1];
-  var group0 = groups[0];
-  var agg0 = getGroupBy(group1,innerAgg);
+  var group0 = {};
   var outerSortAggs = {};
   var aggSub = {};
-  if( -1 != group1.indexOf('[') ){
-    aggSub = agg0.aggs.orderAgg;
-    agg1['outerSort'] = aggSub;
-    agg1['innerAgg'+flag.toString()] = agg0;
-  }else if( -1 != group1.indexOf('(') ){
-    var name = selectOption.split(':')[2];
-    aggSub = agg0.aggs[name.toString()];
-    agg1['outerSort'] = aggSub;
-    agg1['innerAgg'+flag.toString()] = agg0;
-  }
-  if( -1 != group0.indexOf('[') ){
-    var orders = group0.split('[')[2];
-    var order = orders.split(':')[1];
-    var orderOption = {};
-    orderOption['outerSort'] = order;
-    var topn = group0.split('[')[1];
-    var groupbyField = group0.split('[')[0];
-    agg2 = {
-      "terms" : { "field" : groupbyField, "order" : orderOption,"size" : topn },
-      "aggs" : agg1
-    };
-  }else if( -1 != group0.indexOf('(') ){
-    var groupbyField = group0.split('(')[0];
-    var interval = group0.split('(')[1];
-    agg2 = {
-      "date_histogram" : { "field" : groupbyField, "interval" : interval, "format" : "yyyy-MM-dd HH:mm:ss","time_zone": "+08:00" },
-      "aggs" : agg1
-    };
+  var agg0 = {};
+  var agg2 = {};
+  var agg1 = {};
+  var sortFlag = 0;
+  for(var i=groups.length-1;i>=0;i--,sortFlag++){
+    group0 = groups[i];
+    agg0 = getGroupBy(group0,innerAgg,sortFlag);
+    if(i != 0){
+      if( -1 != group0.indexOf('[') ){
+        aggSub = agg0.aggs.orderAgg;
+        agg1['outerSort'] = aggSub;
+        agg1['innerAgg'+flag.toString()] = agg0;
+      }else if( -1 != group0.indexOf('(') ){
+        var name = selectOption.split(':')[2];
+        aggSub = agg0.aggs[name.toString()];
+        agg1['outerSort'] = aggSub;
+        agg1['innerAgg'+flag.toString()] = agg0;
+      }
+    }else{
+      agg1 = agg0;
+    }
+    innerAgg = agg1;
+    agg1 = {};
   }
   return {
-    "innerAgg1" : agg2
+    "innerAgg1" : innerAgg
   };
 }
 
@@ -332,18 +327,6 @@ function agg_action(body){
     }
   };
 }
-
-var resulta = {
-  "options" :{
-    "metric1":{
-      "select1": "value_count:user_id.keyword:a1" ,
-      "where1" : "school_id$16,17" ,
-      "groupby1" : "province.keyword[5[a1:desc;school.keyword[5[a1:desc"
-    }
-  }
-};
-agg_action(resulta);
-
 
 
 //搜索
