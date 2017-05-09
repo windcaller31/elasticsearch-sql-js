@@ -1,5 +1,5 @@
 {
-  options : 固定查询格式如下
+  options : 
 
     {
       "metric1":{
