@@ -1,5 +1,5 @@
 {
-  options : 
+  options :
 
     {
       "metric1":{
@@ -16,7 +16,7 @@
     }
 }
     1.使用限制
-    每个metric支持一个group by对应多个聚合 ,或者 一个聚合对应2个group by
+    每个metric支持一个group by对应多个聚合 ,或者 一个聚合对应多个group by
     多个聚合(N个一对一聚合和group by)对应多个group by 应该分开写多个metric
 
     2.语法说明
