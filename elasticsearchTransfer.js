@@ -326,6 +326,7 @@ function agg_action(body){
       "aggs": aggsOption
     }
   };
+  return aggsOption;
 }
 
 
@@ -388,3 +389,6 @@ function search_detail(body){
   console.log('条件  :',JSON.stringify(scrollOption.body.query.bool.must));
   return scrollOption;
 }
+
+
+module.exports = agg_action;
