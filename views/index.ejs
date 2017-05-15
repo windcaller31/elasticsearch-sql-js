@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script>
+        function getResult(){
+          $.ajax({
+            url: "getResult",
+            data:{
+              select: $('#select').val(),
+              where: $('#where').val(),
+              groupby: $('#groupby').val()
+            },
+            type:"POST",
+            dataType:"json",
+            success: function(data) {
+              var st = JSON.stringify(data.status)
+              $('#result').val('' + st);
+            }
+          });
+        }
+    </script>
+  </head>
+  <body>
+    select:   <input type="text" id="select" name="select" style="width:700px;"/><br />
+    where:    <input type="text" id="where" name="where" style="width:700px;"/><br />
+    groupby: <input type="text" id="groupby" name="groupby" style="width:700px;"/><br />
+  </br>
+  </br>
+  </br>
+    <button id="translate" name="translate" onclick="getResult();">translate</button>
+  </br>
+  </br>
+  </br>
+
+    <textarea id='result' name="result" style="width:700px;height:700px;" /></textarea>
+  </body>
+</html>
