@@ -1,4 +1,10 @@
 # mine
+npm start 启动
+访问 localhost:3000
+
+
+
+
 用js实现的elasticsearch查询,把我自己定义的一种类似sql的语句翻译成elasticsearch的请求体
 
 
@@ -13,3 +19,4 @@ var resulta = {
 };
 agg_action(resulta);
 调用agg_action 完成你的梦想
+详细支持见readme.md
