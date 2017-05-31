@@ -189,10 +189,19 @@ function getAllAggs(selectOption,sourceOption){
 
 //组装一个agg供排序用
 function getSortAggs(orderContent,innerAgg,sortFlag){
-  if(sortFlag>0){
-    return  innerAgg['outerSort'];
-  }else{
+  if(sortFlag==0){
     return  innerAgg[orderContent.toString()];
+  }else{
+    var ls_agg = innerAgg;
+    for(var j =0;j<=sortFlag;j++){
+      //console.log( '--',j,'---',JSON.stringify(ls_agg) );
+      if(j<sortFlag){
+        ls_agg = ls_agg['innerAgg1']['aggs'];
+      }else{
+        ls_agg = ls_agg[orderContent.toString()];
+      }
+    }
+    return ls_agg;
   }
 }
 
@@ -229,7 +238,7 @@ function getGroupBy(groupbyOption,innerAgg,sortFlag){
 
 //一次group
 function getOnceOuterAggs(groupbyOption,innerAgg){
-  var groupbyAgg = getGroupBy(groupbyOption,innerAgg);
+  var groupbyAgg = getGroupBy(groupbyOption,innerAgg,0);
   return {
     "innerAgg" : groupbyAgg
   };
@@ -239,7 +248,6 @@ function getOnceOuterAggs(groupbyOption,innerAgg){
 function getDoubleOuterAggs(groupbyOption,innerAgg,selectOption,flag){
   var groups = groupbyOption.split(';');
   var group0 = {};
-  var outerSortAggs = {};
   var aggSub = {};
   var agg0 = {};
   var agg2 = {};
@@ -251,12 +259,10 @@ function getDoubleOuterAggs(groupbyOption,innerAgg,selectOption,flag){
     if(i != 0){
       if( -1 != group0.indexOf('[') ){
         aggSub = agg0.aggs.orderAgg;
-        agg1['outerSort'] = aggSub;
         agg1['innerAgg'+flag.toString()] = agg0;
       }else if( -1 != group0.indexOf('(') ){
         var name = selectOption.split(':')[2];
         aggSub = agg0.aggs[name.toString()];
-        agg1['outerSort'] = aggSub;
         agg1['innerAgg'+flag.toString()] = agg0;
       }
     }else{
