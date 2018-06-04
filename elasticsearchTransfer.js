@@ -250,7 +250,6 @@ function getDoubleOuterAggs(groupbyOption,innerAgg,selectOption,flag){
   var group0 = {};
   var aggSub = {};
   var agg0 = {};
-  var agg2 = {};
   var agg1 = {};
   var sortFlag = 0;
   for(var i=groups.length-1;i>=0;i--,sortFlag++){
