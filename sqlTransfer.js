@@ -50,17 +50,19 @@ function transfer_outer_sql(sql){
     final_result[metric_key][select_key] = inner_sql_obj["select"];
     final_result[metric_key][where_key] = inner_sql_obj["where"];
     final_result[metric_key][group_key] = inner_sql_obj["groupby"];
+    index = inner_sql_obj["index"]
     index_array.push(index);
   }
   console.log(index_array);
   return final_result;
 }
 
-function transfer_inner_sql(inner_sql,index){
+function transfer_inner_sql(inner_sql){
     inner_sql = inner_sql.split(" ");
     var select_str = '';
     var where_str = '';
     var group_str = '';
+    var index = '';
     var sql_stack = [];
     var return_order_select = '';
     for(var j =0;j<inner_sql.length;j++){
@@ -102,7 +104,8 @@ function transfer_inner_sql(inner_sql,index){
     return {
       "select" : select_str,
       "where" : where_str,
-      "groupby" : group_str
+      "groupby" : group_str,
+      "index" : index
     };
 }
 
@@ -112,11 +115,19 @@ function transfer_select(s){
   var select_final = [];
   var return_select = "";
   var return_order_select = "";
-  for(var i =0;i<s.length;i++){
-    var si = s[i];
-    if(si == ","){
-      var each_mid_select = deal_each_select(each_stack);
+  var new_s = [];
+  for(var j =0 ;j<s.length;j++){
+    var s_j = s[j];
+    if(s_j == "as"){
+      new_s.push(s[j-1]+"^"+s[j]+"^"+s[j+1]);
+    }
+  }
+  for(var i =0;i<new_s.length;i++){
+    var si = new_s[i];
+    if(si != ","){
+      var each_mid_select = deal_each_select(si);
       return_order_select = each_mid_select.split(":")[each_mid_select.split(":").length-1]
+      // console.log("===",return_order_select);
       return_select += each_mid_select;
       each_stack = [];
     }
@@ -142,28 +153,31 @@ function transfer_from(s,index){
 }
 
 function transfer_where(s){
-  s = s.split("and");
   var where_str = "";
   for(var i =0;i<s.length;i++){
     var si = s[i];
-    where_str += deal_each_where(si);
+    if(si!='and'){
+      where_str += deal_each_where(si);
+    }
   }
   return where_str;
 }
 
 function transfer_group(s,return_order_select){
-  s = s.split(",");
+  s = _.compact(s);
   var group_str = "";
-  for(var i =0;i<s.length;i++){
-    var si = s[i];
-    group_str += deal_each_group(s,return_order_select)
+  for(var i=0;i<s.length;i++){
+    s_i = s[i];
+    if(s_i!=","){
+      group_str += deal_each_group(s_i,return_order_select)
+    }
   }
   return group_str;
 }
 
 function deal_each_select(each_stack){
   var each_select_str = "";
-  var each_stack_array = each_stack.split('as');
+  var each_stack_array = each_stack.split('^as^');
   var esa_0 = each_stack_array[0];
   var esa_1 = each_stack_array[1];
   var new_esa_0 = remove_blank(esa_0);//count(a) 计算方式
@@ -232,29 +246,29 @@ function deal_each_where(each_stack){
 //province.keyword[5[a1:desc
 function deal_each_group(s,return_order_select){
   var group_str = "";
-  if(s.indexOf(":")){
+  if(s.indexOf(":") != -1){
     s = s.split(":");
     group_str += s[0];
     group_str += "[";
     group_str += s[1];
     group_str += "[";
     group_str += return_order_select;
+  }else if(s.indexOf("to_date") != -1){
+    var linshi_s = s.split(/to_date\(|\)|,|'/);
+    linshi_s = _.compact(linshi_s);
+    group_str += linshi_s[0];
+    group_str += "(";
+    group_str += linshi_s[1];
   }else{
     group_str += s;
     group_str += "[1000";//默认top100
     group_str += "[";
     group_str += return_order_select;
   }
-  if(s.indexOf("to_date")){
-    var linshi_s = s.split(/to_date\(|\)|,|'/);
-    linshi_s = _.compact(linshi_s);
-    group_str += linshi_s[0];
-    group_str += "(";
-    group_str += linshi_s[1];
-  }
   group_str += ";";
   return group_str;
 }
 
-var test_sql = "select count(province.keyword) from index_a.table_a where a:1 and b>2018-01-02 and c%ccc group by to_date(test_time,day),b:199";
-console.log(JSON.stringify(transfer_outer_sql(test_sql)));
+// var test_sql = "select count(province.keyword) as c_p , sum(order_id) as s_o from index_a.table_a where a:1 and b>2018-01-02 and c%ccc group by to_date(test_time,day) , b:199";
+// test_sql += " union select count(city.keyword) as c_c , sum(amount) as s_a from index_b.table_b where a_0:1 and b_0>2018-01-02 and c_0%ccc group by to_date(test_time_1,month) , i:300"
+// console.log(JSON.stringify(transfer_outer_sql(test_sql)));
