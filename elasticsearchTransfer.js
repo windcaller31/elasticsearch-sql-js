@@ -103,6 +103,8 @@ function getFilterAggs(whereOption){
   var option = {};
   var mustArray = [];
   var result = {};
+  // console.log(whereParams);
+  whereParams = _.compact(whereParams);
   _.each( whereParams,function(w){
     if( -1 != w.indexOf(':') ){
       var key = w.split(':')[0];
@@ -161,6 +163,7 @@ function getFilterAggs(whereOption){
 function getAllAggs(selectOption,sourceOption){
   var result = {};
   var selectors = selectOption.split(';');
+  selectors = _.compact(selectors);
   _.each( selectors,function(s){
     var name = s.split(':')[2];
     var aggs = s.split(':')[0];
@@ -194,7 +197,7 @@ function getSortAggs(orderContent,innerAgg,sortFlag){
   }else{
     var ls_agg = innerAgg;
     for(var j =0;j<=sortFlag;j++){
-      //console.log( '--',j,'---',JSON.stringify(ls_agg) );
+      // console.log( orderContent,'--',sortFlag,'----',innerAgg,'---',JSON.stringify(ls_agg) );
       if(j<sortFlag){
         ls_agg = ls_agg['innerAgg1']['aggs'];
       }else{
@@ -213,7 +216,7 @@ function getGroupBy(groupbyOption,innerAgg,sortFlag){
   }else if( -1 != groupbyOption.indexOf('[') ){
     var orders = groupbyOption.split('[')[2];
     var by = 'orderAgg';
-    var order = orders.split(':')[1];
+    var order = orders.split(':')[1]||"asc";
     var orderContent = orders.split(':')[0];
     var orderAggs = getSortAggs(orderContent,innerAgg,sortFlag);
     innerAgg['orderAgg'] = orderAggs;
@@ -252,6 +255,7 @@ function getDoubleOuterAggs(groupbyOption,innerAgg,selectOption,flag){
   var agg0 = {};
   var agg1 = {};
   var sortFlag = 0;
+  groups = _.compact(groups);
   for(var i=groups.length-1;i>=0;i--,sortFlag++){
     group0 = groups[i];
     agg0 = getGroupBy(group0,innerAgg,sortFlag);
@@ -395,5 +399,6 @@ function search_detail(body){
   return scrollOption;
 }
 
-
+// var a = {"options":{"metric1":{"select1":"value_count:province.keyword:c_p;sum:order_id:s_o;","where1":"_type:table_a;b>2018-01-02;c%ccc;","groupby1":"test_time(day;b[199[s_o;"},"metric2":{"select2":"value_count:city.keyword:c_c;sum:amount:s_a;","where2":"_type:table_b;b_0>2018-01-02;c_0%ccc;","groupby2":"test_time_1(month;i[300[s_a;"}}};
+// agg_action(a);
 module.exports = agg_action;

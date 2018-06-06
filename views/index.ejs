@@ -8,10 +8,7 @@
           $.ajax({
             url: "getResult",
             data:{
-              select: $('#select').val(),
-              where: $('#where').val(),
-              source: $('#source').val(),
-              groupby: $('#groupby').val()
+              sql: $('#your_sql').val()
             },
             type:"POST",
             dataType:"json",
@@ -24,10 +21,7 @@
     </script>
   </head>
   <body>
-    select:   <input type="text" id="select" name="select" style="width:700px;"/><br />
-    where:    <input type="text" id="where" name="where" style="width:700px;"/><br />
-    source:   <input type="text" id="source" name="source" style="width:700px;"/><br />
-    groupby: <input type="text" id="groupby" name="groupby" style="width:700px;"/><br />
+    your SQL:   <input type="text" id="your_sql" name="your_sql" style="width:700px;"/><br />
   </br>
   </br>
   </br>

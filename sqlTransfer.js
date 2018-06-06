@@ -54,7 +54,9 @@ function transfer_outer_sql(sql){
     index_array.push(index);
   }
   console.log(index_array);
-  return final_result;
+  return {
+    "options" : final_result
+  };
 }
 
 function transfer_inner_sql(inner_sql){
@@ -272,3 +274,4 @@ function deal_each_group(s,return_order_select){
 // var test_sql = "select count(province.keyword) as c_p , sum(order_id) as s_o from index_a.table_a where a:1 and b>2018-01-02 and c%ccc group by to_date(test_time,day) , b:199";
 // test_sql += " union select count(city.keyword) as c_c , sum(amount) as s_a from index_b.table_b where a_0:1 and b_0>2018-01-02 and c_0%ccc group by to_date(test_time_1,month) , i:300"
 // console.log(JSON.stringify(transfer_outer_sql(test_sql)));
+module.exports = transfer_outer_sql;
